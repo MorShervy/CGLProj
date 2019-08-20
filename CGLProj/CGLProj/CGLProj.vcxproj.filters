@@ -62,5 +62,14 @@
     <Image Include="res\CGLProj.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\leg.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\underwear.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\realface.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

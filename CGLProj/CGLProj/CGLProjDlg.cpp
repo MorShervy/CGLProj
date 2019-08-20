@@ -6,6 +6,7 @@
 #include "CGLProj.h"
 #include "CGLProjDlg.h"
 #include "afxdialogex.h"
+#include <windows.h> //trying
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,6 +65,12 @@ BEGIN_MESSAGE_MAP(CCGLProjDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN1, &CCGLProjDlg::OnDeltaposSpin1)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN2, &CCGLProjDlg::OnDeltaposSpin2)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN3, &CCGLProjDlg::OnDeltaposSpin3)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN4, &CCGLProjDlg::OnDeltaposSpin4)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN5, &CCGLProjDlg::OnDeltaposSpin5)
+	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN6, &CCGLProjDlg::OnDeltaposSpin6)
 END_MESSAGE_MAP()
 
 
@@ -99,7 +106,10 @@ BOOL CCGLProjDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	ptrView = new CGlView(this);
+	
+	CWnd* panel1 = GetDlgItem(IDC_PICTURE);
+	ptrView = new CGlView(panel1);
+	
 
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -145,7 +155,9 @@ void CCGLProjDlg::OnPaint()
 	{
 		CDialogEx::OnPaint();
 
+		//ptrView->Draw();
 		ptrView->vDrawGLScene();
+		
 	}
 }
 
@@ -156,3 +168,62 @@ HCURSOR CCGLProjDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+// Translate buttons //////////////////////////////////////////
+
+void CCGLProjDlg::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	
+	ptrView->setXShift(ptrView->getXShift() + pNMUpDown->iDelta*-0.1f);
+	ptrView->vDrawGLScene();
+
+	*pResult = 0;
+}
+
+
+void CCGLProjDlg::OnDeltaposSpin2(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	ptrView->setYShift(ptrView->getYShift() + pNMUpDown->iDelta*-0.1f);
+	ptrView->vDrawGLScene();
+	*pResult = 0;
+}
+
+
+void CCGLProjDlg::OnDeltaposSpin3(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	ptrView->setZShift(ptrView->getZShift() + pNMUpDown->iDelta*-0.1f);
+	ptrView->vDrawGLScene();
+	*pResult = 0;
+}
+
+// Rotate buttons //////////////////////////////////////////
+
+
+void CCGLProjDlg::OnDeltaposSpin4(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	ptrView->setXAngle(ptrView->getXAngle() + pNMUpDown->iDelta);
+	ptrView->vDrawGLScene();
+	*pResult = 0;
+}
+
+
+void CCGLProjDlg::OnDeltaposSpin5(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	ptrView->setYAngle(ptrView->getYAngle() + pNMUpDown->iDelta);
+	ptrView->vDrawGLScene();
+	*pResult = 0;
+}
+
+
+void CCGLProjDlg::OnDeltaposSpin6(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	ptrView->setZAngle(ptrView->getZAngle() + pNMUpDown->iDelta);
+	ptrView->vDrawGLScene();
+	*pResult = 0;
+}

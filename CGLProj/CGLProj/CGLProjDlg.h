@@ -36,4 +36,12 @@ protected:
 
 private:
 	CGlView* ptrView;
+	
+public:
+	afx_msg void OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDeltaposSpin2(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDeltaposSpin3(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDeltaposSpin4(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDeltaposSpin5(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnDeltaposSpin6(NMHDR *pNMHDR, LRESULT *pResult);
 };
