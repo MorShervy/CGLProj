@@ -11,16 +11,12 @@
 
 
 #include <gl\GLAUX.H> //// Header File For The glaux Library
-//#include <gl\GLUT.H>		// Header File For The GLut32 Library
 
 
-#define SIZE 6
-#define EARTH_IMAGE 0
-#define GALAXY_IMAGE 1
-#define FLOWER_IMAGE 2
-#define LEG_IMAGE 3
-#define UNDERWEAR_IMAGE 4
-#define REALFACE_IMAGE 5
+
+#define SIZE 16
+#define BOX_IMAGE 15
+
 
 
 class CGlView  
@@ -28,6 +24,7 @@ class CGlView
 public:
 	CGlView(CWnd *pclWnd);
 	~CGlView();
+	
 	
 	protected:
 	private:
@@ -51,6 +48,13 @@ public:
 		float zAngle = 0.0f;
 		float yAngle = 0.0f;
 		float xAngle = 0.0f;
+		float shoulderAngle = 20.0f;
+		float radiusBaseSkirt = 2.0f;
+		float heightSkirt = 1.7f;
+		float skirtAngle = 0.0f;
+		float dancerAngle = 0.0f;
+		int offsetTexture = 0;
+		
 
 public:
 
@@ -70,11 +74,31 @@ public:
 	void setYAngle(float y);
 	void setXAngle(float x);
 
-	void disableLights();
-	void enableLights();
-	void vDrawGLScene();
+	float getShoulderAngle();
+	void setShoulderAngle(float sholderAngle);
+	
+	float getRadiusBaseSkirt();
+	float getHeightSkirt();
+	float getSkirtAngle();
+
+	void setRadiusBaseSkirt(float r);
+	void setHeightSkirt(float h);
+	void setSkirtAngle(float a);
+
+	float getDancerAngle();
+	void setDancerAngle(float a);
+
+	int getOffsetTexture();
+	void setOffsetTexture(int num);
+
+	void vDraw();
+	void DrawTheMan();
+	void DrawFloor();
+	void DrawMirror();
+	void DrawCoverMirror();
 	void generateTextureFromImageFile();
 
+	
 
 	//int intOptionB = 1;
 //int intOptionC = 1;

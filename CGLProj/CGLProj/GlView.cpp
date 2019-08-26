@@ -7,7 +7,7 @@
 
 #include <gl\gl.h>			// Header File For The OpenGL32 Library
 #include <gl\glu.h>			// Header File For The GLu32 Library
-
+#include <gl\GLUT.H>		// Header File For The GLut32 Library
 
 #include <math.h>
 
@@ -44,6 +44,7 @@ CGlView::CGlView(CWnd *pclWnd)
 	vInitGl(iWidth, iHeight);
 
 	generateTextureFromImageFile();
+	glEnable(GL_LIGHTING);
 }
 
 // +
@@ -72,7 +73,7 @@ CGlView::~CGlView()
 		wglDeleteContext(m_hGLContext);
 		m_hGLContext = NULL;
 	}
-
+	
 	
 }
 
@@ -91,181 +92,422 @@ CGlView::~CGlView()
 //   Notes       :  Place all reatime rendering code here
 // *****************************************************************************
 // -
-void CGlView::vDrawGLScene()
+GLUquadricObj *obj;
+
+
+
+void CGlView::vDraw()
 {
+	//
+	obj = gluNewQuadric();
 
-	//glClearColor(1.0f, 1.0f, 1.0f, 0.5f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	// Clear Screen And Depth Buffer
 	glLoadIdentity();
-	glTranslatef(0.0f, 0.0f, -16.0f);
-	//glRotatef(45,1,0, 0);
-
-
+	glTranslatef(-2.0f,-5.0f, -20.0f);
+	glRotatef(-60,1,0, 0);
+	glRotatef(-30, 0, 0, 1);
 	
-	//glEnable(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, idTexture[FLOWER_IMAGE]);//select idTexture[FLOWER_IMAGE]
-	//axes
-	//glBegin(GL_LINES);
-	////x  RED
-	//glColor3f(1.0f, 0.0f, 0.0f);
-	//glVertex3f(-3.0f, 0.0f, 0.0f);
-	//glVertex3f(3.0f, 0.0f, 0.0f);
-	////y  GREEN 
-	//glColor3f(0.0f, 1.0f, 0.0f);
-	//glVertex3f(0.0f, -3.0f, 0.0f);
-	//glVertex3f(0.0f, 3.0f, 0.0f);
-	////z  BLUE
-	//glColor3f(0.0f, 0.0f, 1.0f);
-	//glVertex3f(0.0f, 0.0f, -3.0f);
-	//glVertex3f(0.0f, 0.0f, 3.0f);
-	//glEnd();
 
 	// Translate
 	glTranslatef(xShift, yShift, zShift);
 
-	// Rotate
+	//// Rotate
 	glRotatef(xAngle, 1, 0, 0);
 	glRotatef(yAngle, 0, 1, 0);
 	glRotatef(zAngle, 0, 0, 1);
-
-	enableLights();
-
-
-	glColor3f(1.0f, 1.0f, 1.0f); // color white for texture
-	GLUquadricObj* obj;
-	obj = gluNewQuadric();
-
-	// head - sphere
-	glPushMatrix();
-		glEnable(GL_TEXTURE_2D);
-		gluQuadricTexture(obj, true);
-		glBindTexture(GL_TEXTURE_2D, idTexture[REALFACE_IMAGE]);//select idTexture[EARTH_IMAGE]
-		glTranslatef(0.0f, 4.0f, 0.0f); // move add y+=4
-		glRotatef(-90, 1, 0, 0);
-		//glColor3f(0.1f, 0.1f, 0.7f);
-		gluSphere(obj, 1.1, 32, 32);
-		glDisable(GL_TEXTURE_2D);
-	glPopMatrix();
-
-	// neck
-	glPushMatrix();
-		glTranslatef(0.0f, 3.0f, 0.0f);
-		glRotatef(90, 1, 0, 0);
-		glColor3f(0.1f, 0.7f, 0.7f);
-		gluSphere(obj, 0.5, 32, 32);
-	glPopMatrix();
-
-	// body top cover
-	glPushMatrix();
-	glEnable(GL_TEXTURE_2D);
-	gluQuadricTexture(obj, true);
-	glBindTexture(GL_TEXTURE_2D, idTexture[LEG_IMAGE]);//select idTexture[EARTH_IMAGE]
-		disableLights();
-		glTranslatef(0, 2.5, 0);
-		glRotatef(45, 0, 1, 0);
-		glRotatef(90, 1, 0, 0);
-		//glColor3f(0.5f, 1.0f, 0.7f);
-		glColor3f(1.0, 1.0, 1.0);
-		gluDisk(obj, 0, 1.5, 4, 4);
-		enableLights();
-		
-	glPopMatrix();
+	//axes
+	glBegin(GL_LINES);
+	//x  RED
+	glColor3f(1.0f, 0.0f, 0.0f);
+	glVertex3f(-3.0f, 0.0f, 0.0f);
+	glVertex3f(3.0f, 0.0f, 0.0f);
+	//y  GREEN 
+	glColor3f(0.0f, 1.0f, 0.0f);
+	glVertex3f(0.0f, -3.0f, 0.0f);
+	glVertex3f(0.0f, 3.0f, 0.0f);
+	//z  BLUE
+	glColor3f(0.0f, 0.0f, 1.0f);
+	glVertex3f(0.0f, 0.0f, -3.0f);
+	glVertex3f(0.0f, 0.0f, 3.0f);
+	glEnd();
 	
-	//body 
+	
+	//////MIRROR //////////////////////////////////
+
+	//Settings for drawing semi transparent stuff
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	//making a stencil for the mirror
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+	glColorMask((byte)GL_FALSE, (byte)GL_FALSE, (byte)GL_FALSE, (byte)GL_FALSE);
+	glDisable(GL_DEPTH_TEST); //draw no matter what
+	//not really draw. just makeing a hole in the stencil
+	DrawMirror();
+	
+	//restore regular settings
+	glColorMask((byte)GL_TRUE, (byte)GL_TRUE, (byte)GL_TRUE, (byte)GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+
+	//setting stencil test (anything outside is clipped)
+	glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	glEnable(GL_STENCIL_TEST);
+
+	//draw reflected scene
 	glPushMatrix();
+	glTranslated(0.0f,5.0f,2.5f);   //moving into the mirror
+	glRotated(-20, 1, 0, 0);    //rotating according to mirror angle
+	glTranslated(0.0f,5.0f, -2.5f);   //moving into the mirror
+	glScalef(1, -1, 1);
 
-		//glTranslatef(0.0f, 2.3f, 0.0f);
-		glRotatef(45, 0, 1, 0); // rotate y 45 degrees
-		glRotatef(-90, 1, 0, 0); // rotate x
-		//glColor3f(0.5f, 1.0f, 0.7f);
-		gluCylinder(obj, 1.06, 1.5, 2.5, 32, 32);
-		
+	//here
+	DrawFloor();
+	DrawTheMan();
+
+
 	glPopMatrix();
+	glDisable(GL_STENCIL_TEST); //no need for the stencil anymore
 
-	// body bottom cover
-	glPushMatrix();
-		disableLights();
-		//glTranslatef(0, 2.5, 0);
-		glRotatef(45, 0, 1, 0);
-		glRotatef(90, 1, 0, 0);
-		//glColor3f(0.5f, 1.0f, 0.7f);
-		gluDisk(obj, 0, 1.5, 4, 4);
-		enableLights();
-	glPopMatrix();
+	DrawMirror();
 
-	//left circle for left hand
-	glPushMatrix();
-		glTranslatef(1.2f, 2.0f, 0.0f);
-		glRotatef(90, 1, 0, 0); // rotate x
-		//glColor3f(1.0f, 1.0f, 0.7f);
-		gluSphere(obj, 0.6, 32, 32);
-	glPopMatrix();
-
-	//right circle for left hand
-	glPushMatrix();
-		glTranslatef(-1.2f, 2.0f, 0.0f);
-		glRotatef(90, 1, 0, 0); // rotate x
-		//glColor3f(1.0f, 1.0f, 0.7f);
-		gluSphere(obj, 0.6, 32, 32);
-		glDisable(GL_TEXTURE_2D);
-	glPopMatrix();
-
-	// circle for down body
-	glPushMatrix();
-		glEnable(GL_TEXTURE_2D);
-		gluQuadricTexture(obj, true);
-		glBindTexture(GL_TEXTURE_2D, idTexture[UNDERWEAR_IMAGE]);//select idTexture[EARTH_IMAGE]
-		glTranslatef(0.0f, 0.0f, 0.0f);
-		glRotatef(90, 1, 0, 0); // rotate x
-		glColor3f(1.0f, 1.0f, 1.7f);
-		gluSphere(obj, 1.06, 32, 32);
-		glDisable(GL_TEXTURE_2D);
-	glPopMatrix();
-
-	// left leg
-	glPushMatrix();
-		glTranslatef(0.6f, 0.0f, 0.0f);
-		//glRotatef(45, 0, 1, 0); // rotate y 45 degrees
-		glRotatef(90, 1, 0, 0); // rotate x
-		glColor3f(0.5f, 0.5f, 1.7f);
-		gluCylinder(obj, 0.35,0.35, 2.5, 32, 32);
-	glPopMatrix();
-
-	// right leg
-	glPushMatrix();
-		glTranslatef(-0.6f, 0.0f, 0.0f);
-		//glRotatef(45, 0, 1, 0); // rotate y 45 degrees
-		glRotatef(90, 1, 0, 0); // rotate x
-		glColor3f(0.5f, 0.5f, 1.7f);
-		gluCylinder(obj, 0.35, 0.35, 2.5, 32, 32);
-	glPopMatrix();
-
-
-	// rectangle for left leg
-	//glPushMatrix();
-
-	//	glTranslatef(0.0f, -2.5f, 0.0f);
-	//	glRotatef(-45, 0, 0, 1); // rotate y 45 degrees
-	//	//glRotatef(0, 1, 0, 0); // rotate x
-	//	glColor3f(0.5f, 0.5f, 1.7f);
-	//	gluCylinder(obj, 0.5,2,1,4,2);
-	//glPopMatrix();
-
-
-
-	//glRotatef(-180, 1, 0, 0);
-	//glTranslatef(0.0f, 15.0f, 0.0f);
-	//glColor3f(0.1f, 0.1f, 0.7f);
-	//gluCylinder(obj, 0.5, 0.5, 6, 16, 16);
-
-	disableLights();
-	gluDeleteQuadric(obj);
-
+	
+	glEnable(GL_LIGHTING);
+	
+	DrawFloor();
+	DrawCoverMirror();
+	DrawTheMan();
+	
+	glDisable(GL_LIGHTING);
+	glFlush();
 	// swap the buffer
 	SwapBuffers(m_hDC);
 
+	gluDeleteQuadric(obj);
+	
 }
 
+void CGlView::DrawTheMan()
+{
+	
+	glPushMatrix();
+	
+	glRotatef(dancerAngle, 0, 0, 1);
+
+	glPushMatrix();
+	
+		// left shoe
+		glEnable(GL_TEXTURE_2D);
+		gluQuadricTexture(obj, true);
+		glBindTexture(GL_TEXTURE_2D, idTexture[offsetTexture + 9]);
+		glTranslatef(-0.5f, 0.0f, 2.7f);
+		glRotatef(90, 1, 0, 0);
+		glRotatef(-90, 0, 1, 0);
+		glutSolidTeapot(0.5);
+		glDisable(GL_TEXTURE_2D);
+
+
+		// left leg
+		glColor3f(244 / 256.0f, 198 / 256.0f, 175 / 256.0f); // skin tone 
+		glRotatef(-90, 1, 0, 0);
+		gluCylinder(obj, 0.2, 0.4, 2, 20, 20);
+	glPopMatrix();
+
+	glColor3f(1.0f, 1.0f, 1.0f); // white color
+
+	// right shoe
+	glPushMatrix();
+		glEnable(GL_TEXTURE_2D);
+		gluQuadricTexture(obj, true);
+		glBindTexture(GL_TEXTURE_2D, idTexture[offsetTexture + 9]);
+		glTranslatef(0.5f, 0.0f, 2.7f);
+		glRotatef(90, 1, 0, 0);
+		glRotatef(-90, 0, 1, 0);
+		glutSolidTeapot(0.5);
+		glDisable(GL_TEXTURE_2D);
+
+		// right leg
+		glColor3f(244 / 256.0f, 198 / 256.0f, 175 / 256.0f); // skin tone 
+		glRotatef(-90, 1, 0, 0);
+		gluCylinder(obj, 0.2, 0.4, 2, 20, 20);
+
+	glPopMatrix();
+	
+	glColor3f(1.0f, 1.0f, 1.0f); // white color
+
+
+	// skirt
+	glPushMatrix();
+		glEnable(GL_TEXTURE_2D);
+		gluQuadricTexture(obj, true);
+		glBindTexture(GL_TEXTURE_2D, idTexture[offsetTexture+3]);
+		glTranslatef(0.0f, 0.0f,4.0f);
+		glRotatef(skirtAngle, 0, 0, 1);
+		gluCylinder(obj, radiusBaseSkirt, 0.75, heightSkirt, 20, 20);
+		glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+
+	// body
+	glEnable(GL_TEXTURE_2D);
+	gluQuadricTexture(obj, true);
+	glBindTexture(GL_TEXTURE_2D, idTexture[offsetTexture + 6]);
+	glTranslatef(0.0f, 0.0f,5.2f);
+	gluCylinder(obj, 0.75, 0.75, 2.5, 20, 20);
+	glDisable(GL_TEXTURE_2D);
+
+	// upper blob
+	glEnable(GL_TEXTURE_2D);
+	gluQuadricTexture(obj, true);
+	glBindTexture(GL_TEXTURE_2D, idTexture[offsetTexture + 12]);
+	glTranslatef(0.0f, 0.0f, 2.5f);
+//	glColor3f(244 / 256.0f, 198 / 256.0f, 175 / 256.0f);
+
+	gluSphere(obj, 0.75, 20, 20);
+	glDisable(GL_TEXTURE_2D);
+
+		//Right
+		glPushMatrix();
+			glTranslated(0.75f, 0.0f, 0.0f);
+			glColor3f(244/256.0f, 198/256.0f, 175/256.0f); // skin tone 
+			//right shoulder
+			gluSphere(obj, 0.3, 20, 20);
+			glRotated(shoulderAngle, 1, 0, 0);
+			//right arm
+			gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
+			glTranslated(0.0f, 0.0f, 1.5f);
+			//right elbow
+			gluSphere(obj, 0.3, 20, 20);
+			glRotated(-15, 1, 0, 0);
+			//right forearm
+			gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
+			glTranslated(0.0f, 0.0f, 1.5f);
+			//right hand
+			gluCylinder(obj, 0.2, 0, .5, 20, 20);
+		glPopMatrix();
+
+		//Left
+		glPushMatrix();
+			glTranslated(-0.75f, 0.0f, 0.0f);
+			//glColor3f(0.5f, 0.30f, 0.21f);
+			//left shoulder
+			gluSphere(obj, 0.3, 20, 20);
+			glRotated(shoulderAngle, 1, 0, 0);
+			//left arm
+			gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
+			glTranslated(0.0f, 0.0f, 1.5f);
+			//left elbow
+			gluSphere(obj, 0.3, 20, 20);
+			glRotated(-15, 1, 0, 0);
+			//left forearm
+			gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
+			glTranslated(0.0f, 0.0f, 1.5f);
+			//left hand
+			gluCylinder(obj, 0.2, 0, .5, 20, 20);
+		glPopMatrix();
+
+		glColor3f(1.0f, 1.0f, 1.0f); // white color 
+		// neck
+		gluCylinder(obj, 0.2, 0.19, 0.5 + 0.75, 20, 20);
+
+		// head
+		glEnable(GL_TEXTURE_2D);
+		gluQuadricTexture(obj, true);
+		glBindTexture(GL_TEXTURE_2D, idTexture[offsetTexture + 0]);
+		glTranslated(0.0f, 0.0f, 1.2f);
+		gluSphere(obj, 0.5, 20, 20);
+		glDisable(GL_TEXTURE_2D);
+
+	glPopMatrix();
+}
+
+
+void CGlView::DrawFloor() {
+
+	/////////////////////////////////////////////////////////
+	//// FLOOR //////////////////////////////////////////////
+	/////////////////////////////////////////////////////////
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, idTexture[BOX_IMAGE]);
+	glTranslatef(-5.0f, -5.0f, 0.0f);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	//glRotatef(-90, 1, 0, 0);
+
+	glBegin(GL_QUADS);
+		//bottom floor
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, 0);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 10,0);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10, 0);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 0, 0);
+
+		//top floor
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, 2.5);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 10,2.5);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10, 2.5);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 0, 2.5);
+	glEnd();
+
+	//covers 4 sides of the floor
+	glBegin(GL_QUADS);
+
+		//cover back side floor
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 10, 0);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 10, 2.5);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10,2.5);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 10, 0);
+
+
+		//cover front side floor
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, 0);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 0, 2.5);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 0, 2.5);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 0, 0);
+
+
+
+		//cover right side floor
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(10, 0, 0);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(10, 0, 2.5);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10, 2.5);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 10, 0);
+
+
+		//cover left side floor
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, 0);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 0, 2.5);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(0, 10, 2.5);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(0, 10, 0);
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
+
+void CGlView::DrawMirror() {
+	glEnable(GL_LIGHTING);
+	// front mirror with transparent colors
+	glPushMatrix();
+	glTranslatef(-5.0f, 5.0f,2.5f);
+	glRotated(70, 1, 0, 0);
+	glBegin(GL_QUADS);
+
+	glColor4d(0, 0, 1, 0.5);
+	glVertex3d(0.5, 0.5, 0.05f);
+	glVertex3d(0.5, 9.5, 0.05f);
+	glVertex3d(9.5, 9.5, 0.05f);
+	glVertex3d(9.5, 0.5, 0.05f);
+	glEnd();
+	glPopMatrix();
+
+
+}
+
+void CGlView::DrawCoverMirror() {
+
+	glPushMatrix();// save starting position of drawing
+	
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, idTexture[BOX_IMAGE]);
+	glTranslatef(-5.0f, -5.0f, 0.0f);
+	glTranslatef(0, 10.0f, 2.5f);
+	glRotated(70, 1, 0, 0);
+
+	glBegin(GL_QUADS);
+
+		// bottom
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, -2);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 10, -2);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10, -2);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 0, -2);
+
+		//top
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, 0);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 10, 0);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10, 0);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 0, 0);
+
+		//front
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 10, -2);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 10, 0);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10, 0);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 10, -2);
+
+		//back
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, -2);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 0, 0);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 0, 0);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 0, -2);
+
+		//left
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(0, 0, -2);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(0, 0, 0);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(0, 10, 0);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(0, 10, -2);
+
+		//right
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex3d(10, 0, -2);
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex3d(10, 0, 0);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex3d(10, 10, 0);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex3d(10, 10, -2);
+
+	glEnd();
+
+	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
+}
 
 float CGlView::getZShift() {
 	return this->zShift;
@@ -308,29 +550,73 @@ void CGlView::setXAngle(float xAngle) {
 	this->xAngle = xAngle;
 }
 
-void CGlView::disableLights()
-{
-	//Disable color and light effects
-	glDisable(GL_COLOR_MATERIAL);
-	glDisable(GL_LIGHT0);
-	glDisable(GL_LIGHTING);
+float CGlView::getShoulderAngle() {
+	return this->shoulderAngle;
 }
 
-void CGlView::enableLights()
-{
-	//Enable color and light effects
-	glEnable(GL_COLOR_MATERIAL);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHTING);
+void CGlView::setShoulderAngle(float shoulderAngle) {
+	this->shoulderAngle = shoulderAngle;
 }
+
+float CGlView::getRadiusBaseSkirt() {
+	return this->radiusBaseSkirt;
+}
+
+float CGlView::getHeightSkirt() {
+	return this->heightSkirt;
+}
+
+float CGlView::getSkirtAngle() {
+	return this->skirtAngle;
+}
+
+void CGlView::setRadiusBaseSkirt(float r) {
+	this->radiusBaseSkirt = r;
+}
+
+void CGlView::setHeightSkirt(float h) {
+	this->heightSkirt = h;
+}
+
+void CGlView::setSkirtAngle(float a) {
+	this->skirtAngle = a;
+}
+
+float CGlView::getDancerAngle() {
+	return this->dancerAngle;
+}
+
+void CGlView::setDancerAngle(float a) {
+	this->dancerAngle = a;
+}
+
+int CGlView::getOffsetTexture() {
+	return this->offsetTexture;
+}
+
+void CGlView::setOffsetTexture(int num) {
+	if (num > 2)
+		this->offsetTexture = 0;
+	else
+		this->offsetTexture = num;
+}
+
 
 void CGlView::generateTextureFromImageFile()
 {
 	glGenTextures(SIZE, idTexture);//generates ID for each texture.
 
-	const char* imageFileName[SIZE] = { "res\\earth.bmp", "res\\env.bmp", "res\\flower.bmp","res\\leg.bmp","res\\underwear.bmp","res\\realface.bmp" };
+	const char* imageFileName[SIZE] = { 
+		"res\\face1.bmp","res\\face2.bmp","res\\face3.bmp",
+		"res\\skirt1.bmp","res\\skirt2.bmp","res\\skirt3.bmp",
+		"res\\body1.bmp","res\\body2.bmp","res\\body3.bmp",
+		"res\\shoe1.bmp","res\\shoe2.bmp","res\\shoe3.bmp",
+		"res\\up1.bmp","res\\up2.bmp","res\\up3.bmp",
+
+		"res\\send.bmp"};
 
 	for (int i = 0; i < SIZE; i++)
+
 	{
 		texture = auxDIBImageLoad(imageFileName[i]);//loads the width, height, colors from the image file (*.bmp) into opengl structure (AUX_RGBImageRec).
 
@@ -346,474 +632,7 @@ void CGlView::generateTextureFromImageFile()
 	}
 }
 
-//
-//void CGlView::vDrawHoleInAPit() {
-//	glBegin(GL_QUADS);
-//	glVertex3d(-5, 0, 5);
-//	glVertex3d(-5, 10, 5);
-//	glVertex3d(5, 10, 5);
-//	glVertex3d(5, 0, 5);
-//	glEnd();
-//}
-//void CGlView::vDrawChest() {
-//	//wglSwapLayerBuffers(m_hDC,)
-//
-//
-//	glPushMatrix();// save starting position of drawing
-//	glTranslatef(-5.0f, 0.0f, 0.0f);
-//	glColor3f(1.0f, 1.0f, 1.0f);
-//	glEnable(GL_TEXTURE_2D);
-//	//glBindTexture(GL.GL_TEXTURE_2D, Textures[(0 + textureOffset) % Textures.Length]);
-//	glBegin(GL_QUADS);
-//
-//	//bottom
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, 0);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 10, 0);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, 0);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 0, 0);
-//
-//	//top
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, 5);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 10, 5);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, 5);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 0, 5);
-//
-//	glEnd();
-//	//GL.glBindTexture(GL.GL_TEXTURE_2D, Textures[(1 + textureOffset) % Textures.Length]);
-//	glBegin(GL_QUADS);
-//
-//	//top - other texture
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0.5, 0.5, 5.01f);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0.5, 9.5, 5.01f);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(9.5, 9.5, 5.01f);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(9.5, 0.5, 5.01f);
-//
-//	glEnd();
-//	//GL.glBindTexture(GL.GL_TEXTURE_2D, Textures[(0 + textureOffset) % Textures.Length]);
-//	glBegin(GL_QUADS);
-//
-//	//front
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 10, 0);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 10, 5);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, 5);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 10, 0);
-//
-//	//back
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, 0);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 0, 5);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 0, 5);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 0, 0);
-//
-//	//left
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, 0);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 0, 5);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(0, 10, 5);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(0, 10, 0);
-//
-//	//right
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(10, 0, 0);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(10, 0, 5);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, 5);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 10, 0);
-//
-//	glEnd();
-//	glDisable(GL_TEXTURE_2D);
-//	glPopMatrix();
-//
-//
-//}
-//
-//void CGlView::vDrawChestLidTop()  //draws only top of chest lid - for use of shadow stencil
-//{
-//	glPushMatrix();// save starting position of drawing
-//
-//	glColor3f(1.0f, 1.0f, 1.0f);
-//	glTranslatef(-5.0f, 0.0f, 0.0f);
-//	glTranslatef(0, 10.0f, 5.0f);
-//	glRotated(mirrorAngle, 1, 0, 0);
-//	glBegin(GL_QUADS);
-//	//top
-//	glVertex3d(0, 0, 0);
-//	glVertex3d(0, 10, 0);
-//	glVertex3d(10, 10, 0);
-//	glVertex3d(10, 0, 0);
-//	glEnd();
-//	glPopMatrix();
-//}
-//
-//void CGlView::vDrawChestLid()
-//{
-//	glPushMatrix();// save starting position of drawing
-//
-//	glColor3f(1.0f, 1.0f, 1.0f);
-//	glEnable(GL_TEXTURE_2D);
-//	//glBindTexture(GL_TEXTURE_2D, Textures[(0 + textureOffset) % Textures.Length]);
-//	glTranslatef(-5.0f, 0.0f, 0.0f);
-//	glTranslatef(0, 10.0f, 5.0f);
-//	glRotated(mirrorAngle, 1, 0, 0);
-//
-//	glBegin(GL_QUADS);
-//
-//	//bottom
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, -2);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 10, -2);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, -2);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 0, -2);
-//
-//	//top
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, 0);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 10, 0);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, 0);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 0, 0);
-//
-//	//front
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 10, -2);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 10, 0);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, 0);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 10, -2);
-//
-//	//back
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, -2);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 0, 0);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 0, 0);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 0, -2);
-//
-//	//left
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(0, 0, -2);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(0, 0, 0);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(0, 10, 0);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(0, 10, -2);
-//
-//	//right
-//	glTexCoord2f(0.0f, 0.0f);
-//	glVertex3d(10, 0, -2);
-//	glTexCoord2f(0.0f, 1.0f);
-//	glVertex3d(10, 0, 0);
-//	glTexCoord2f(1.0f, 1.0f);
-//	glVertex3d(10, 10, 0);
-//	glTexCoord2f(1.0f, 0.0f);
-//	glVertex3d(10, 10, -2);
-//
-//	glEnd();
-//	glDisable(GL_TEXTURE_2D);
-//	glPopMatrix();
-//}
-//
-//void CGlView::vDrawTheWomanInRed()
-//{
-//	GLUquadricObj* obj;
-//	obj = gluNewQuadric();
-//	glPushMatrix();
-//	glColor3f(1.0f, 1.0f, 1.0f);
-//	glTranslatef(0.0f, 5.0f, 5.2f);
-//	glRotated(intOptionB, 0, 0, 1); //rotating the dancer
-//	glPushMatrix();// save position of dancer
-//	//if (shadow == false)
-//	//	pre_MapSphereTexture(2);
-//	glRotated(90, 1, 0, 0);
-//	//glutSolidTeapot(0.5);
-//	glRotated(-90, 1, 0, 0);
-//	end_MapTexture();
-//	/*if (shadow == false)
-//		pre_MapCylinderTexture(3);*/
-//	gluCylinder(obj, 0.2, 0.4, 4, 20, 20);
-//	glTranslated(0.4f, 0.0f, 2.0f);
-//	end_MapTexture();
-//
-//	//right leg - rotate to leg angle
-//	glRotated(50, 0, 1, 0);
-//	//right shoe
-//	//if (shadow == false)
-//	//	pre_MapSphereTexture(2);
-//	glRotated(90, 1, 0, 0);
-//	//glutSolidTeapot(0.5);
-//	glRotated(-90, 1, 0, 0);
-//	end_MapTexture();
-//
-//	//lower right leg
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(3);
-//	gluCylinder(obj, 0.2, 0.25, 2, 20, 20);
-//	glTranslated(0.0f, 0.0f, 2.0f);
-//	glRotated(-100, 0, 1, 0);
-//
-//	//right knee
-//	gluSphere(obj, 0.25, 20, 20);
-//
-//	//upper second leg
-//	gluCylinder(obj, 0.25, 0.4, 2, 20, 20);
-//	glPopMatrix(); //reset position to the first leg
-//	end_MapTexture();
-//
-//	//skirt
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(4);
-//	glTranslated(0.0f, 0.0f, 4.0f);
-//	gluCylinder(obj, 2, 0.75, 1.5, 20, 20);
-//	glTranslated(0.0f, 0.0f, 1.5f);
-//	end_MapTexture();
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(5);
-//	gluCylinder(obj, 0.75, 0.75, 2.5, 20, 20);
-//	glTranslated(0.0f, 0.0f, 2.5f);
-//	end_MapTexture();
-//
-//	//upper blob
-//	//if (shadow == false)
-//	//	pre_MapSphereTexture(5);
-//	gluSphere(obj, 0.75, 20, 20);
-//	end_MapTexture();
-//	//Right
-//	glPushMatrix();
-//	glTranslated(0.75f, 0.0f, 0.0f);
-//	//right shoulder
-//	//if (shadow == false)
-//	//	pre_MapSphereTexture(5);
-//	gluSphere(obj, 0.3, 20, 20);
-//	end_MapTexture();
-//	glRotated(shoulderAngle, 1, 0, 0);
-//	//right arm
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(5);
-//	gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
-//	glTranslated(0.0f, 0.0f, 1.5f);
-//	end_MapTexture();
-//	//right elbow
-//	//if (shadow == false)
-//	//	pre_MapSphereTexture(5);
-//	gluSphere(obj, 0.3, 20, 20);
-//	glRotated(-15, 1, 0, 0);
-//	end_MapTexture();
-//	//right forearm
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(3);
-//	gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
-//	glTranslated(0.0f, 0.0f, 1.5f);
-//	//right hand
-//	gluCylinder(obj, 0.2, 0, .5, 20, 20);
-//	glPopMatrix();
-//	end_MapTexture();
-//	//Left
-//	glPushMatrix();
-//	glTranslated(-0.75f, 0.0f, 0.0f);
-//	//left shoulder
-//	//if (shadow == false)
-//	//	pre_MapSphereTexture(5);
-//	gluSphere(obj, 0.3, 20, 20);
-//	glRotated(shoulderAngle, 1, 0, 0);
-//	end_MapTexture();
-//	//left arm
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(5);
-//	gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
-//	glTranslated(0.0f, 0.0f, 1.5f);
-//	end_MapTexture();
-//	//left elbow
-//	//if (shadow == false)
-//	//	pre_MapSphereTexture(5);
-//	gluSphere(obj, 0.3, 20, 20);
-//	glRotated(-15, 1, 0, 0);
-//	end_MapTexture();
-//	//left forearm
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(3);
-//	gluCylinder(obj, 0.2, 0.19, 1.5, 20, 20);
-//	glTranslated(0.0f, 0.0f, 1.5f);
-//	//left hand
-//	gluCylinder(obj, 0.2, 0, .5, 20, 20);
-//	glPopMatrix();
-//	//neck
-//	gluCylinder(obj, 0.2, 0.19, 0.5 + 0.75, 20, 20);
-//	glTranslated(0.0f, 0.0f, 1.2f);
-//	end_MapTexture();
-//	//head
-//	//if (shadow == false)
-//	//	pre_MapCylinderTexture(6);
-//	gluSphere(obj, 0.5, 20, 20);
-//	glPopMatrix();
-//	end_MapTexture();
-//
-//	gluDeleteQuadric(obj);
-//
-//}
-//
-//void CGlView::vDrawMirror() {
-//	glPushMatrix();
-//	glTranslated(-5, 10, 5);
-//	glRotated(mirrorAngle, 1, 0, 0);
-//	glEnable(GL_LIGHTING);
-//	glBegin(GL_QUADS);
-//
-//	glColor4d(0, 0, 1, 0.5);
-//	glVertex3d(0.5, 0.5, 0.05f);
-//	glVertex3d(0.5, 9.5, 0.05f);
-//	glVertex3d(9.5, 9.5, 0.05f);
-//	glVertex3d(9.5, 0.5, 0.05f);
-//	glEnd();
-//	glPopMatrix();
-//}
-//
-//void CGlView::Draw() {
-//	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear Screen And Depth Buffer
-//	glLoadIdentity();
-//
-//	//Handeling of translate rotate - mathematically correct
-//	double ModelVievMatrixBeforeSpecificTransforms[16];
-//	double CurrentRotationTraslation[16];
-//
-//	glTranslatef(0.0f, 0.0f, -1.0f);
-//	glTranslatef(0.0f, 0.0f, -10.0f);
-//
-//	//glEnable(GL_COLOR_MATERIAL);
-//	//glEnable(GL_LIGHT0);
-//	//glEnable(GL_LIGHTING);
-//	//save current ModelView Matrix values
-//	//in ModelVievMatrixBeforeSpecificTransforms array
-//	//ModelView Matrix ========>>>>>> ModelVievMatrixBeforeSpecificTransforms
-//	glGetDoublev(GL_MODELVIEW_MATRIX, ModelVievMatrixBeforeSpecificTransforms);
-//	//ModelView Matrix was saved, so
-//	glLoadIdentity(); // make it identity matrix
-//	
-//	//make transformation in accordance to KeyCode
-//	float delta;
-//	if (intOptionC != 0)
-//	{
-//		delta = 5.0f * abs(intOptionC) / intOptionC; // signed 5
-//
-//		switch (abs(intOptionC))
-//		{
-//		case 1:
-//			glRotatef(delta, 1, 0, 0);
-//			break;
-//		case 2:
-//			glRotatef(delta, 0, 1, 0);
-//			break;
-//		case 3:
-//			glRotatef(delta, 0, 0, 1);
-//			break;
-//		case 4:
-//			glTranslatef(delta / 20, 0, 0);
-//			break;
-//		case 5:
-//			glTranslatef(0, delta / 20, 0);
-//			break;
-//		case 6:
-//			glTranslatef(0, 0, delta / 20);
-//			break;
-//		}
-//	}
-//
-//	//as result - the ModelView Matrix now is pure representation
-//			//of KeyCode transform and only it !!!
-//
-//			//save current ModelView Matrix values
-//			//in CurrentRotationTraslation array
-//			//ModelView Matrix =======>>>>>>> CurrentRotationTraslation
-//	glGetDoublev(GL_MODELVIEW_MATRIX, CurrentRotationTraslation);
-//
-//	//The GL.glLoadMatrix function replaces the current matrix with
-//	//the one specified in its argument.
-//	//The current matrix is the
-//	//projection matrix, modelview matrix, or texture matrix,
-//	//determined by the current matrix mode (now is ModelView mode)
-//	glLoadMatrixd(AccumulatedRotationsTraslations); //Global
-//
-//	//The GL.glMultMatrix function multiplies the current matrix by
-//			//the one specified in its argument.
-//			//That is, if M is the current matrix and T is the matrix passed to
-//			//GL.glMultMatrix, then M is replaced with M • T
-//	glMultMatrixd(CurrentRotationTraslation);
-//
-//	//save the matrix product in AccumulatedRotationsTraslations
-//	glGetDoublev(GL_MODELVIEW_MATRIX, AccumulatedRotationsTraslations);
-//
-//	//replace ModelViev Matrix with stored ModelVievMatrixBeforeSpecificTransforms
-//	glLoadMatrixd(ModelVievMatrixBeforeSpecificTransforms);
-//	//multiply it by KeyCode defined AccumulatedRotationsTraslations matrix
-//	glMultMatrixd(AccumulatedRotationsTraslations);
-//
-//	//end of - Handeling of translate rotate mathematically correct
-//
-//	//Animation Values
-//	//intOptionC += 2;
-//	//intOptionB += 2;    //dancer rotation
-//	//sin_index++;
-//
-//	//for arms animation
-//	shoulderAngle = (int)(45 + 45 * sin((2 * PI) / 100 * sin_index));
-//
-//	//mising code
-//	vDrawChest();
-//	vDrawChestLid();
-//	vDrawTheWomanInRed();
-//
-//	glPopMatrix();
-//	glDisable(GL_LIGHTING);
-//	glDisable(GL_STENCIL_TEST);
-//	glFlush();
-//
-//	
-//
-//	// swap the buffer
-//	SwapBuffers(m_hDC);
-//}
 
-
-
-//void CGlView::end_MapTexture()
-//{
-//	//GL.glDisable(GL.GL_TEXTURE_GEN_S);
-//	//GL.glDisable(GL.GL_TEXTURE_GEN_T);
-//	glDisable(GL_TEXTURE_2D);
-//}
 
 // +
 // *****************************************************************************
@@ -923,6 +742,11 @@ void CGlView::vInitGl(int iWidth, int iHeigth)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+
+	glEnable(GL_COLOR_MATERIAL);
+	glEnable(GL_LIGHT0);
+	float *pos = new float[4]{ -4,0,10,1 };
+	glLightfv(GL_LIGHT0, GL_POSITION, pos);
 }
 
 

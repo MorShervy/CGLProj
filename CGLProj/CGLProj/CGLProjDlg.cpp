@@ -7,6 +7,7 @@
 #include "CGLProjDlg.h"
 #include "afxdialogex.h"
 #include <windows.h> //trying
+#include "Mmsystem.h";
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -20,12 +21,12 @@ class CAboutDlg : public CDialogEx
 public:
 	CAboutDlg();
 
-// Dialog Data
+	// Dialog Data
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_ABOUTBOX };
 #endif
 
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
 // Implementation
@@ -71,6 +72,14 @@ BEGIN_MESSAGE_MAP(CCGLProjDlg, CDialogEx)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN4, &CCGLProjDlg::OnDeltaposSpin4)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN5, &CCGLProjDlg::OnDeltaposSpin5)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN6, &CCGLProjDlg::OnDeltaposSpin6)
+	ON_WM_TIMER()
+	ON_BN_CLICKED(IDC_CHECK1, &CCGLProjDlg::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_CHECK2, &CCGLProjDlg::OnBnClickedCheck2)
+	ON_BN_CLICKED(IDC_CHECK3, &CCGLProjDlg::OnBnClickedCheck3)
+	ON_BN_CLICKED(IDC_BUTTON1, &CCGLProjDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CCGLProjDlg::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_BUTTON3, &CCGLProjDlg::OnBnClickedButton3)
+	
 END_MESSAGE_MAP()
 
 
@@ -106,11 +115,9 @@ BOOL CCGLProjDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
 	// TODO: Add extra initialization here
-	
+
 	CWnd* panel1 = GetDlgItem(IDC_PICTURE);
 	ptrView = new CGlView(panel1);
-	
-
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -156,8 +163,8 @@ void CCGLProjDlg::OnPaint()
 		CDialogEx::OnPaint();
 
 		//ptrView->Draw();
-		ptrView->vDrawGLScene();
-		
+		ptrView->vDraw();
+
 	}
 }
 
@@ -174,9 +181,9 @@ HCURSOR CCGLProjDlg::OnQueryDragIcon()
 void CCGLProjDlg::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
-	
+
 	ptrView->setXShift(ptrView->getXShift() + pNMUpDown->iDelta*-0.1f);
-	ptrView->vDrawGLScene();
+	ptrView->vDraw();
 
 	*pResult = 0;
 }
@@ -186,7 +193,7 @@ void CCGLProjDlg::OnDeltaposSpin2(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 	ptrView->setYShift(ptrView->getYShift() + pNMUpDown->iDelta*-0.1f);
-	ptrView->vDrawGLScene();
+	ptrView->vDraw();
 	*pResult = 0;
 }
 
@@ -195,7 +202,7 @@ void CCGLProjDlg::OnDeltaposSpin3(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 	ptrView->setZShift(ptrView->getZShift() + pNMUpDown->iDelta*-0.1f);
-	ptrView->vDrawGLScene();
+	ptrView->vDraw();
 	*pResult = 0;
 }
 
@@ -206,7 +213,7 @@ void CCGLProjDlg::OnDeltaposSpin4(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 	ptrView->setXAngle(ptrView->getXAngle() + pNMUpDown->iDelta);
-	ptrView->vDrawGLScene();
+	ptrView->vDraw();
 	*pResult = 0;
 }
 
@@ -215,7 +222,7 @@ void CCGLProjDlg::OnDeltaposSpin5(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 	ptrView->setYAngle(ptrView->getYAngle() + pNMUpDown->iDelta);
-	ptrView->vDrawGLScene();
+	ptrView->vDraw();
 	*pResult = 0;
 }
 
@@ -224,6 +231,157 @@ void CCGLProjDlg::OnDeltaposSpin6(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 	ptrView->setZAngle(ptrView->getZAngle() + pNMUpDown->iDelta);
-	ptrView->vDrawGLScene();
+	ptrView->vDraw();
 	*pResult = 0;
 }
+
+
+void CCGLProjDlg::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: Add your message handler code here and/or call default
+	if (nIDEvent == 1) {
+
+		//ptrView->setYAngle(ptrView->getYAngle() + 1);
+
+		// hands animation
+		static bool isMaxAngle = false;
+		if (!isMaxAngle) {
+			ptrView->setShoulderAngle(ptrView->getShoulderAngle() + 2);
+			if (ptrView->getShoulderAngle() >= 80)
+				isMaxAngle = true;
+		}
+		else {
+			ptrView->setShoulderAngle(ptrView->getShoulderAngle() - 2);
+			if (ptrView->getShoulderAngle() <= -10)
+				isMaxAngle = false;
+		}
+
+
+	}
+	else if (nIDEvent == 2) {
+		// skirt animation
+		ptrView->setSkirtAngle(ptrView->getSkirtAngle() + 1);
+
+		static bool isMaxRadius = false;
+		if (!isMaxRadius) {
+			ptrView->setHeightSkirt(ptrView->getHeightSkirt() - 0.01);
+			ptrView->setRadiusBaseSkirt(ptrView->getRadiusBaseSkirt() + 0.1);
+			if (ptrView->getRadiusBaseSkirt() >= 5)
+				isMaxRadius = true;
+		}
+		else {
+			ptrView->setHeightSkirt(ptrView->getHeightSkirt() + 0.01);
+			ptrView->setRadiusBaseSkirt(ptrView->getRadiusBaseSkirt() - 0.1);
+			if (ptrView->getRadiusBaseSkirt() <= 2)
+				isMaxRadius = false;
+		}
+	}
+	else if (nIDEvent == 3) {
+		ptrView->setDancerAngle(ptrView->getDancerAngle() + 1);
+	}
+
+
+	ptrView->vDraw();
+
+	CDialogEx::OnTimer(nIDEvent);
+}
+
+
+void CCGLProjDlg::OnBnClickedCheck1()
+{
+	// ANIMATION 
+	static bool flag = true;
+
+	if (flag)
+		SetTimer(1, 10, NULL);
+
+	// stop timer and sound
+	else {
+		KillTimer(1);
+	}
+	flag = !flag;
+}
+
+void CCGLProjDlg::OnBnClickedCheck2()
+{
+	// TODO: Add your control notification handler code here
+	static bool flag = true;
+	if (flag)
+		SetTimer(2, 10, NULL);
+	else {
+		KillTimer(2);
+	}
+	flag = !flag;
+}
+
+
+void CCGLProjDlg::OnBnClickedCheck3()
+{
+	// TODO: Add your control notification handler code here
+	static bool flag = true;
+	if (flag)
+		SetTimer(3, 10, NULL);
+	else {
+		KillTimer(3);
+	}
+	flag = !flag;
+}
+
+
+void CCGLProjDlg::OnBnClickedButton1()
+{
+	// TODO: Add your control notification handler code here
+	// TOGGLE
+	ptrView->setOffsetTexture(ptrView->getOffsetTexture() + 1);
+	ptrView->vDraw();
+
+}
+
+void CCGLProjDlg::OnBnClickedButton2()
+{
+	// TODO: Add your control notification handler code here
+	ptrView->setXShift(0);
+	ptrView->setYShift(0);
+	ptrView->setZShift(0);
+
+	ptrView->setXAngle(0);
+	ptrView->setYAngle(0);
+	ptrView->setZAngle(0);
+
+	ptrView->setShoulderAngle(20.0f);
+	ptrView->setRadiusBaseSkirt(2.0f);
+	ptrView->setHeightSkirt(1.7f);
+	ptrView->setSkirtAngle(0);
+	ptrView->setDancerAngle(0);
+	ptrView->setOffsetTexture(0);
+	ptrView->vDraw();
+
+}
+
+
+void CCGLProjDlg::OnBnClickedButton3()
+{
+	// TODO: Add your control notification handler code here
+	static bool playSound = true;
+	if (playSound) {
+		PlaySoundW(L"res/tong.wav", NULL, SND_FILENAME | SND_LOOP | SND_ASYNC);
+		MessageBox(L"true");
+		playSound = false;
+	}
+	else {
+		PlaySoundW(NULL, NULL, NULL);
+		playSound = true;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+

@@ -97,6 +97,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>opengl32.lib;glu32.lib;glaux.lib;glut32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -211,8 +212,10 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\CGLProj.ico" />
+    <Image Include="res\face.bmp" />
     <Image Include="res\leg.bmp" />
     <Image Include="res\realface.bmp" />
+    <Image Include="res\shirt1.bmp" />
     <Image Include="res\underwear.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

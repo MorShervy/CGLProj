@@ -71,5 +71,11 @@
     <Image Include="res\realface.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\face.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\shirt1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

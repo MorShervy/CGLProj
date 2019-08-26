@@ -37,6 +37,7 @@ protected:
 private:
 	CGlView* ptrView;
 	
+	
 public:
 	afx_msg void OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDeltaposSpin2(NMHDR *pNMHDR, LRESULT *pResult);
@@ -44,4 +45,11 @@ public:
 	afx_msg void OnDeltaposSpin4(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDeltaposSpin5(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnDeltaposSpin6(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnBnClickedCheck1();
+	afx_msg void OnBnClickedButton2();
+	afx_msg void OnBnClickedCheck2();
+	afx_msg void OnBnClickedCheck3();
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButton3();
 };
