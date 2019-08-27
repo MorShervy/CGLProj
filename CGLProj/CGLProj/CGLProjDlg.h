@@ -13,6 +13,7 @@ class CCGLProjDlg : public CDialogEx
 // Construction
 public:
 	CCGLProjDlg(CWnd* pParent = nullptr);	// standard constructor
+	bool playSound;
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME

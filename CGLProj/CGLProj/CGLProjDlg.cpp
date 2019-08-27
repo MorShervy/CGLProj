@@ -118,6 +118,7 @@ BOOL CCGLProjDlg::OnInitDialog()
 
 	CWnd* panel1 = GetDlgItem(IDC_PICTURE);
 	ptrView = new CGlView(panel1);
+	playSound = true;
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -354,6 +355,11 @@ void CCGLProjDlg::OnBnClickedButton2()
 	ptrView->setSkirtAngle(0);
 	ptrView->setDancerAngle(0);
 	ptrView->setOffsetTexture(0);
+	KillTimer(1);
+	KillTimer(2);
+	KillTimer(3);
+	PlaySoundW(NULL, NULL, NULL);
+	playSound = true;
 	ptrView->vDraw();
 
 }
@@ -362,7 +368,7 @@ void CCGLProjDlg::OnBnClickedButton2()
 void CCGLProjDlg::OnBnClickedButton3()
 {
 	// TODO: Add your control notification handler code here
-	static bool playSound = true;
+	
 	if (playSound) {
 		PlaySoundW(L"res/tong.wav", NULL, SND_FILENAME | SND_LOOP | SND_ASYNC);
 		MessageBox(L"true");
