@@ -370,8 +370,7 @@ void CCGLProjDlg::OnBnClickedButton3()
 	// TODO: Add your control notification handler code here
 	
 	if (playSound) {
-		PlaySoundW(L"res/tong.wav", NULL, SND_FILENAME | SND_LOOP | SND_ASYNC);
-		MessageBox(L"true");
+		PlaySoundW(L"res/song.wav", NULL, SND_FILENAME | SND_LOOP | SND_ASYNC);
 		playSound = false;
 	}
 	else {
